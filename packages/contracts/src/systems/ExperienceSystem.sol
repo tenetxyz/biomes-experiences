@@ -42,20 +42,26 @@ import { Build, BuildWithPos, buildExistsInWorld, buildWithPosExistsInWorld, get
 import { NamedArea, NamedBuild, NamedBuildWithPos, weiToString, getEmptyBlockOnGround } from "../utils/GameUtils.sol";
 
 import { IExperienceSystem } from "../prototypes/IExperienceSystem.sol";
-import { EXPERIENCE_NAMESPACE } from "../Constants.sol";
+import { EXPERIENCE_NAMESPACE, PRIZE_AREA_ID } from "../Constants.sol";
+
+import { GameMetadata } from "../codegen/tables/GameMetadata.sol";
 
 // Functions that are called by EOAs
 contract ExperienceSystem is IExperienceSystem {
   function joinExperience() public payable override {
     super.joinExperience();
+
+    address player = _msgSender();
+    require(!GameMetadata.getGameOver(), "Game is already over.");
+    require(getEntityFromPlayer(player) != bytes32(0), "You Must First Spawn An Avatar In Biome-1 To Play The Game.");
+    Notifications.set(address(0), string.concat(Strings.toHexString(player), " has joined the game"));
   }
 
   function initExperience() public {
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
 
-    DisplayStatus.set("Test Experience Status");
-    DisplayRegisterMsg.set("Test Experience Register Message");
-    DisplayUnregisterMsg.set("Test Experience Unregister Message");
+    DisplayStatus.set("Game in progress. Move your avatar inside the SkyBox to win!");
+    DisplayRegisterMsg.set("Move hook checks if your player has reached the summit.");
 
     address worldSystemAddress = Systems.getSystem(getNamespaceSystemId(EXPERIENCE_NAMESPACE, "WorldSystem"));
     require(worldSystemAddress != address(0), "WorldSystem not found");
@@ -69,9 +75,16 @@ contract ExperienceSystem is IExperienceSystem {
         shouldDelegate: false,
         hookSystemIds: hookSystemIds,
         joinFee: 0,
-        name: "Test Experience",
-        description: "Test Experience Description"
+        name: "Race To The Sky",
+        description: "First to reach the designated area in the sky wins the ETH"
       })
     );
+  }
+
+  function resetGame(string memory name, Area memory area) public payable {
+    AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
+    setArea(PRIZE_AREA_ID, name, area);
+    GameMetadata.setGameOver(false);
+    GameMetadata.setWinner(address(0));
   }
 }

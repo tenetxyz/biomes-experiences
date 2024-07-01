@@ -40,17 +40,12 @@ import { Area, insideArea, insideAreaIgnoreY, getEntitiesInArea, getArea, setAre
 import { Build, BuildWithPos, buildExistsInWorld, buildWithPosExistsInWorld, getBuild, setBuild, getBuildWithPos, setBuildWithPos } from "../utils/BuildUtils.sol";
 import { NamedArea, NamedBuild, NamedBuildWithPos, weiToString, getEmptyBlockOnGround } from "../utils/GameUtils.sol";
 
-// Functions that are called by the Biomes World contract
-contract WorldSystem is System, ICustomUnregisterDelegation, IOptionalSystemHook {
-  function supportsInterface(bytes4 interfaceId) public pure override(IERC165, WorldContextConsumer) returns (bool) {
-    return
-      interfaceId == type(ICustomUnregisterDelegation).interfaceId ||
-      interfaceId == type(IOptionalSystemHook).interfaceId ||
-      super.supportsInterface(interfaceId);
-  }
+import { GameMetadata } from "../codegen/tables/GameMetadata.sol";
+import { PRIZE_AREA_ID } from "../Constants.sol";
 
-  function canUnregister(address delegator) public override returns (bool) {
-    return true;
+contract WorldSystem is System, IOptionalSystemHook {
+  function supportsInterface(bytes4 interfaceId) public pure override(IERC165, WorldContextConsumer) returns (bool) {
+    return interfaceId == type(IOptionalSystemHook).interfaceId || super.supportsInterface(interfaceId);
   }
 
   function onRegisterHook(
@@ -69,5 +64,27 @@ contract WorldSystem is System, ICustomUnregisterDelegation, IOptionalSystemHook
 
   function onBeforeCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {}
 
-  function onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {}
+  function onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {
+    if (GameMetadata.getGameOver()) {
+      return;
+    }
+    Area memory prizeArea = getArea(PRIZE_AREA_ID);
+
+    bytes32 playerEntityId = getEntityFromPlayer(msgSender);
+    if (playerEntityId == bytes32(0)) {
+      return;
+    }
+
+    VoxelCoord memory playerPosition = getPosition(playerEntityId);
+
+    if (insideArea(prizeArea, playerPosition)) {
+      GameMetadata.set(true, msgSender);
+      DisplayStatus.set(string.concat("Game over. Winner: ", Strings.toHexString(msgSender)));
+      DisplayRegisterMsg.set("Game is over.");
+      Notifications.set(address(0), string.concat(Strings.toHexString(msgSender), " has won the game!"));
+
+      ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(Utils.systemNamespace());
+      IWorld(_world()).transferBalanceToAddress(namespaceId, msgSender, Balances.get(namespaceId));
+    }
+  }
 }

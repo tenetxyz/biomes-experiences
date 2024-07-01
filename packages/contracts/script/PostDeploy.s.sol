@@ -21,6 +21,7 @@ import { Countdown } from "../src/codegen/tables/Countdown.sol";
 import { Tokens } from "../src/codegen/tables/Tokens.sol";
 
 import { VoxelCoord } from "@biomesaw/utils/src/Types.sol";
+import { Area } from "../src/utils/AreaUtils.sol";
 
 contract PostDeploy is Script {
   function run(address worldAddress) external {
@@ -33,7 +34,12 @@ contract PostDeploy is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    IWorld(worldAddress).experience__initExperience();
+    IWorld(worldAddress).racetothesky__initExperience();
+
+    IWorld(worldAddress).racetothesky__resetGame{ value: 33000000000000000 }(
+      "SkyBox",
+      Area({ lowerSouthwestCorner: VoxelCoord({ x: 221, y: 50, z: -93 }), size: VoxelCoord({ x: 3, y: 3, z: 3 }) })
+    );
 
     vm.stopBroadcast();
   }

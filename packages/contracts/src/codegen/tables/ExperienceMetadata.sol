@@ -26,8 +26,8 @@ struct ExperienceMetadataData {
 }
 
 library ExperienceMetadata {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "experience", name: "ExperienceMetada", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657870657269656e636500000000457870657269656e63654d6574616461);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "racetothesky", name: "ExperienceMetada", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746272616365746f746865736b790000457870657269656e63654d6574616461);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0035030314012000000000000000000000000000000000000000000000000000);

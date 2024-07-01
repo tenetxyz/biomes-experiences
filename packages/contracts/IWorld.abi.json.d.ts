@@ -152,160 +152,6 @@ declare const abi: [
   },
   {
     "type": "function",
-    "name": "experience__canUnregister",
-    "inputs": [
-      {
-        "name": "delegator",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__initExperience",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__joinExperience",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "payable"
-  },
-  {
-    "type": "function",
-    "name": "experience__onAfterCallSystem",
-    "inputs": [
-      {
-        "name": "msgSender",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "systemId",
-        "type": "bytes32",
-        "internalType": "ResourceId"
-      },
-      {
-        "name": "callData",
-        "type": "bytes",
-        "internalType": "bytes"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__onBeforeCallSystem",
-    "inputs": [
-      {
-        "name": "msgSender",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "systemId",
-        "type": "bytes32",
-        "internalType": "ResourceId"
-      },
-      {
-        "name": "callData",
-        "type": "bytes",
-        "internalType": "bytes"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__onRegisterHook",
-    "inputs": [
-      {
-        "name": "msgSender",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "systemId",
-        "type": "bytes32",
-        "internalType": "ResourceId"
-      },
-      {
-        "name": "enabledHooksBitmap",
-        "type": "uint8",
-        "internalType": "uint8"
-      },
-      {
-        "name": "callDataHash",
-        "type": "bytes32",
-        "internalType": "bytes32"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__onUnregisterHook",
-    "inputs": [
-      {
-        "name": "msgSender",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "systemId",
-        "type": "bytes32",
-        "internalType": "ResourceId"
-      },
-      {
-        "name": "enabledHooksBitmap",
-        "type": "uint8",
-        "internalType": "uint8"
-      },
-      {
-        "name": "callDataHash",
-        "type": "bytes32",
-        "internalType": "bytes32"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__supportsInterface",
-    "inputs": [
-      {
-        "name": "interfaceId",
-        "type": "bytes4",
-        "internalType": "bytes4"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "pure"
-  },
-  {
-    "type": "function",
     "name": "getDynamicField",
     "inputs": [
       {
@@ -813,6 +659,205 @@ declare const abi: [
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "racetothesky__initExperience",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "racetothesky__joinExperience",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "racetothesky__onAfterCallSystem",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "callData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "racetothesky__onBeforeCallSystem",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "callData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "racetothesky__onRegisterHook",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "enabledHooksBitmap",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "callDataHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "racetothesky__onUnregisterHook",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "enabledHooksBitmap",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "callDataHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "racetothesky__resetGame",
+    "inputs": [
+      {
+        "name": "name",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "area",
+        "type": "tuple",
+        "internalType": "struct Area",
+        "components": [
+          {
+            "name": "lowerSouthwestCorner",
+            "type": "tuple",
+            "internalType": "struct VoxelCoord",
+            "components": [
+              {
+                "name": "x",
+                "type": "int16",
+                "internalType": "int16"
+              },
+              {
+                "name": "y",
+                "type": "int16",
+                "internalType": "int16"
+              },
+              {
+                "name": "z",
+                "type": "int16",
+                "internalType": "int16"
+              }
+            ]
+          },
+          {
+            "name": "size",
+            "type": "tuple",
+            "internalType": "struct VoxelCoord",
+            "components": [
+              {
+                "name": "x",
+                "type": "int16",
+                "internalType": "int16"
+              },
+              {
+                "name": "y",
+                "type": "int16",
+                "internalType": "int16"
+              },
+              {
+                "name": "z",
+                "type": "int16",
+                "internalType": "int16"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "racetothesky__supportsInterface",
+    "inputs": [
+      {
+        "name": "interfaceId",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "pure"
   },
   {
     "type": "function",
