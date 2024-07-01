@@ -40,17 +40,15 @@ import { Area, insideArea, insideAreaIgnoreY, getEntitiesInArea, getArea, setAre
 import { Build, BuildWithPos, buildExistsInWorld, buildWithPosExistsInWorld, getBuild, setBuild, getBuildWithPos, setBuildWithPos } from "../utils/BuildUtils.sol";
 import { NamedArea, NamedBuild, NamedBuildWithPos, weiToString, getEmptyBlockOnGround } from "../utils/GameUtils.sol";
 
-// Functions that are called by the Biomes World contract
-contract WorldSystem is System, ICustomUnregisterDelegation, IOptionalSystemHook {
-  function supportsInterface(bytes4 interfaceId) public pure override(IERC165, WorldContextConsumer) returns (bool) {
-    return
-      interfaceId == type(ICustomUnregisterDelegation).interfaceId ||
-      interfaceId == type(IOptionalSystemHook).interfaceId ||
-      super.supportsInterface(interfaceId);
-  }
+import { GameMetadata } from "../codegen/tables/GameMetadata.sol";
+import { PlayerMetadata, PlayerMetadataData } from "../codegen/tables/PlayerMetadata.sol";
+import { DEATHMATCH_AREA_ID } from "../Constants.sol";
+import { updatePlayersToDisplay, disqualifyPlayer } from "../Utils.sol";
 
-  function canUnregister(address delegator) public override returns (bool) {
-    return true;
+// Functions that are called by the Biomes World contract
+contract WorldSystem is System, IOptionalSystemHook {
+  function supportsInterface(bytes4 interfaceId) public pure override(IERC165, WorldContextConsumer) returns (bool) {
+    return interfaceId == type(IOptionalSystemHook).interfaceId || super.supportsInterface(interfaceId);
   }
 
   function onRegisterHook(
@@ -65,9 +63,96 @@ contract WorldSystem is System, ICustomUnregisterDelegation, IOptionalSystemHook
     ResourceId systemId,
     uint8 enabledHooksBitmap,
     bytes32 callDataHash
-  ) public override {}
+  ) public override {
+    disqualifyPlayer(msgSender);
+  }
 
   function onBeforeCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {}
 
-  function onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {}
+  function onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {
+    PlayerMetadataData memory playerMetadata = PlayerMetadata.get(msgSender);
+    if (!playerMetadata.isRegistered) {
+      return;
+    }
+    bool isAlive = playerMetadata.isAlive;
+    bool isGameStarted = GameMetadata.getIsGameStarted();
+    uint256 gameEndBlock = Countdown.getCountdownEndBlock();
+    if (isSystemId(systemId, "LogoffSystem")) {
+      require(!isGameStarted || block.number > gameEndBlock, "Cannot logoff during the game");
+      return;
+    } else if (isSystemId(systemId, "HitSystem")) {
+      if (isGameStarted && block.number > gameEndBlock) {
+        return;
+      }
+      if (isGameStarted && isAlive) {
+        (uint256 numNewDeadPlayers, bool msgSenderDied) = updateAlivePlayers(msgSender);
+        if (msgSenderDied) {
+          numNewDeadPlayers -= 1;
+        }
+        PlayerMetadata.setNumKills(msgSender, PlayerMetadata.getNumKills(msgSender) + numNewDeadPlayers);
+      } else {
+        address hitPlayer = getHitArgs(callData);
+        PlayerMetadataData memory hitPlayerMetadata = PlayerMetadata.get(hitPlayer);
+        require(
+          !hitPlayerMetadata.isRegistered || !hitPlayerMetadata.isAlive || hitPlayerMetadata.isDisqualified,
+          "Cannot hit game players before the game starts or if you died."
+        );
+      }
+    } else if (isSystemId(systemId, "MineSystem")) {
+      if (!isGameStarted || !isAlive || block.number > gameEndBlock) {
+        return;
+      }
+      (uint256 numNewDeadPlayers, bool msgSenderDied) = updateAlivePlayers(msgSender);
+      if (msgSenderDied) {
+        numNewDeadPlayers -= 1;
+      }
+      PlayerMetadata.setNumKills(msgSender, PlayerMetadata.getNumKills(msgSender) + numNewDeadPlayers);
+    } else if (isSystemId(systemId, "MoveSystem")) {
+      if (!isGameStarted || block.number > gameEndBlock) {
+        return;
+      }
+
+      Area memory matchArea = getArea(DEATHMATCH_AREA_ID);
+
+      VoxelCoord memory playerPosition = getPosition(getEntityFromPlayer(msgSender));
+      if (isAlive) {
+        require(
+          insideAreaIgnoreY(matchArea, playerPosition),
+          "Cannot move outside the match area while the game is running"
+        );
+      } else {
+        require(
+          !insideAreaIgnoreY(matchArea, playerPosition),
+          "Cannot move inside the match area while the game is running and you are dead."
+        );
+      }
+    }
+  }
+
+  function updateAlivePlayers(address msgSender) internal returns (uint256, bool) {
+    address[] memory registeredPlayers = GameMetadata.getPlayers();
+    uint256 numNewDeadPlayers = 0;
+    bool msgSenderDied = false;
+    for (uint i = 0; i < registeredPlayers.length; i++) {
+      address player = registeredPlayers[i];
+      if (!PlayerMetadata.getIsAlive(player) || PlayerMetadata.getIsDisqualified(player)) {
+        continue;
+      }
+      bytes32 playerEntity = getEntityFromPlayer(player);
+      if (playerEntity == bytes32(0)) {
+        numNewDeadPlayers++;
+        if (player == msgSender) {
+          msgSenderDied = true;
+        }
+        PlayerMetadata.setIsAlive(player, false);
+        Notifications.set(address(0), string.concat("Player ", Strings.toHexString(player), " has died"));
+      }
+    }
+
+    if (numNewDeadPlayers > 0) {
+      updatePlayersToDisplay();
+    }
+
+    return (numNewDeadPlayers, msgSenderDied);
+  }
 }

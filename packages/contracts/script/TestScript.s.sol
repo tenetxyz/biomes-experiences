@@ -19,7 +19,8 @@ import { BuildsWithPos, BuildsWithPosData } from "../src/codegen/tables/BuildsWi
 import { Countdown } from "../src/codegen/tables/Countdown.sol";
 import { Tokens } from "../src/codegen/tables/Tokens.sol";
 
-import { VoxelCoord } from "@biomesaw/utils/src/Types.sol";
+import { GameMetadata } from "../src/codegen/tables/GameMetadata.sol";
+import { PlayerMetadata } from "../src/codegen/tables/PlayerMetadata.sol";
 
 contract TestScript is Script {
   function run(address worldAddress) external {
@@ -32,7 +33,13 @@ contract TestScript is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    Notifications.set(address(0), "Test Notification");
+    // IWorld(worldAddress).deathmatch__startGame(30);
+    IWorld(worldAddress).deathmatch__claimRewardPool();
+    address[] memory registeredPlayers = GameMetadata.getPlayers();
+    for (uint i = 0; i < registeredPlayers.length; i++) {
+      console.logAddress(registeredPlayers[i]);
+      console.logUint(PlayerMetadata.getNumKills(registeredPlayers[i]));
+    }
 
     vm.stopBroadcast();
   }

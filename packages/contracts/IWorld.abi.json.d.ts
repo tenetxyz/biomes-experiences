@@ -134,58 +134,58 @@ declare const abi: [
   },
   {
     "type": "function",
-    "name": "deleteRecord",
-    "inputs": [
-      {
-        "name": "tableId",
-        "type": "bytes32",
-        "internalType": "ResourceId"
-      },
-      {
-        "name": "keyTuple",
-        "type": "bytes32[]",
-        "internalType": "bytes32[]"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__canUnregister",
-    "inputs": [
-      {
-        "name": "delegator",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__initExperience",
+    "name": "deathmatch__claimRewardPool",
     "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
   {
     "type": "function",
-    "name": "experience__joinExperience",
+    "name": "deathmatch__getKillsLeaderboard",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct LeaderboardEntry[]",
+        "components": [
+          {
+            "name": "player",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "isAlive",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "kills",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "deathmatch__initExperience",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "deathmatch__joinExperience",
     "inputs": [],
     "outputs": [],
     "stateMutability": "payable"
   },
   {
     "type": "function",
-    "name": "experience__onAfterCallSystem",
+    "name": "deathmatch__onAfterCallSystem",
     "inputs": [
       {
         "name": "msgSender",
@@ -208,7 +208,7 @@ declare const abi: [
   },
   {
     "type": "function",
-    "name": "experience__onBeforeCallSystem",
+    "name": "deathmatch__onBeforeCallSystem",
     "inputs": [
       {
         "name": "msgSender",
@@ -231,7 +231,7 @@ declare const abi: [
   },
   {
     "type": "function",
-    "name": "experience__onRegisterHook",
+    "name": "deathmatch__onRegisterHook",
     "inputs": [
       {
         "name": "msgSender",
@@ -259,7 +259,7 @@ declare const abi: [
   },
   {
     "type": "function",
-    "name": "experience__onUnregisterHook",
+    "name": "deathmatch__onUnregisterHook",
     "inputs": [
       {
         "name": "msgSender",
@@ -287,7 +287,97 @@ declare const abi: [
   },
   {
     "type": "function",
-    "name": "experience__supportsInterface",
+    "name": "deathmatch__setJoinFee",
+    "inputs": [
+      {
+        "name": "newJoinFee",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "deathmatch__setMatchArea",
+    "inputs": [
+      {
+        "name": "name",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "area",
+        "type": "tuple",
+        "internalType": "struct Area",
+        "components": [
+          {
+            "name": "lowerSouthwestCorner",
+            "type": "tuple",
+            "internalType": "struct VoxelCoord",
+            "components": [
+              {
+                "name": "x",
+                "type": "int16",
+                "internalType": "int16"
+              },
+              {
+                "name": "y",
+                "type": "int16",
+                "internalType": "int16"
+              },
+              {
+                "name": "z",
+                "type": "int16",
+                "internalType": "int16"
+              }
+            ]
+          },
+          {
+            "name": "size",
+            "type": "tuple",
+            "internalType": "struct VoxelCoord",
+            "components": [
+              {
+                "name": "x",
+                "type": "int16",
+                "internalType": "int16"
+              },
+              {
+                "name": "y",
+                "type": "int16",
+                "internalType": "int16"
+              },
+              {
+                "name": "z",
+                "type": "int16",
+                "internalType": "int16"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "deathmatch__startGame",
+    "inputs": [
+      {
+        "name": "numBlocksToEnd",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "deathmatch__supportsInterface",
     "inputs": [
       {
         "name": "interfaceId",
@@ -303,6 +393,24 @@ declare const abi: [
       }
     ],
     "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "deleteRecord",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",

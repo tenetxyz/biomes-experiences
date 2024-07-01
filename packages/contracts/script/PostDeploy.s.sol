@@ -21,6 +21,7 @@ import { Countdown } from "../src/codegen/tables/Countdown.sol";
 import { Tokens } from "../src/codegen/tables/Tokens.sol";
 
 import { VoxelCoord } from "@biomesaw/utils/src/Types.sol";
+import { Area } from "../src/utils/AreaUtils.sol";
 
 contract PostDeploy is Script {
   function run(address worldAddress) external {
@@ -33,7 +34,15 @@ contract PostDeploy is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    IWorld(worldAddress).experience__initExperience();
+    IWorld(worldAddress).deathmatch__initExperience();
+
+    IWorld(worldAddress).deathmatch__setMatchArea(
+      "Match Area",
+      Area({
+        lowerSouthwestCorner: VoxelCoord({ x: 271, y: -150, z: -235 }),
+        size: VoxelCoord({ x: 60, y: 250, z: 60 })
+      })
+    );
 
     vm.stopBroadcast();
   }
