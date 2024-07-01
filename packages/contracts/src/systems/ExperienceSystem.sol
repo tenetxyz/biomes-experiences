@@ -42,36 +42,143 @@ import { Build, BuildWithPos, buildExistsInWorld, buildWithPosExistsInWorld, get
 import { NamedArea, NamedBuild, NamedBuildWithPos, weiToString, getEmptyBlockOnGround } from "../utils/GameUtils.sol";
 
 import { IExperienceSystem } from "../prototypes/IExperienceSystem.sol";
-import { EXPERIENCE_NAMESPACE } from "../Constants.sol";
+import { EXPERIENCE_NAMESPACE, DEATHMATCH_AREA_ID } from "../Constants.sol";
+import { GameMetadata } from "../codegen/tables/GameMetadata.sol";
+import { PlayerMetadata, PlayerMetadataData } from "../codegen/tables/PlayerMetadata.sol";
+import { hasValidInventory, updatePlayersToDisplay, disqualifyPlayer } from "../Utils.sol";
+import { LeaderboardEntry } from "../Types.sol";
 
 // Functions that are called by EOAs
 contract ExperienceSystem is IExperienceSystem {
   function joinExperience() public payable override {
     super.joinExperience();
+    address player = _msgSender();
+
+    require(!GameMetadata.getIsGameStarted(), "Game has already started.");
+    bytes32 playerEntityId = getEntityFromPlayer(player);
+    require(playerEntityId != bytes32(0), "You Must First Spawn An Avatar In Biome-1 To Play The Game");
+    require(hasValidInventory(playerEntityId), "You can only have a maximum of 3 tools and 20 blocks");
+
+    require(!PlayerMetadata.getIsRegistered(player), "Player is already registered");
+    PlayerMetadata.setIsRegistered(player, true);
+    PlayerMetadata.setIsAlive(player, true);
+    GameMetadata.pushPlayers(player);
+    updatePlayersToDisplay();
+
+    Notifications.set(address(0), string.concat("Player ", Strings.toHexString(player), " has joined the game"));
   }
 
   function initExperience() public {
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
 
-    DisplayStatus.set("Test Experience Status");
-    DisplayRegisterMsg.set("Test Experience Register Message");
-    DisplayUnregisterMsg.set("Test Experience Unregister Message");
+    GameMetadata.setGameStarter(0x70997970C51812dc3A010C7d01b50e0d17dc79C8);
+
+    DisplayStatus.set("Waiting for the game to start");
+    DisplayRegisterMsg.set(
+      "Move hook, hit hook, and logoff hook prevent the player from moving outside match area, hitting players before match starts, or logging off during the match. Mine hook tracks kills from gravity."
+    );
+    DisplayUnregisterMsg.set("You will be disqualified if you unregister");
 
     address worldSystemAddress = Systems.getSystem(getNamespaceSystemId(EXPERIENCE_NAMESPACE, "WorldSystem"));
     require(worldSystemAddress != address(0), "WorldSystem not found");
 
-    bytes32[] memory hookSystemIds = new bytes32[](1);
+    bytes32[] memory hookSystemIds = new bytes32[](4);
     hookSystemIds[0] = ResourceId.unwrap(getSystemId("MoveSystem"));
+    hookSystemIds[1] = ResourceId.unwrap(getSystemId("HitSystem"));
+    hookSystemIds[2] = ResourceId.unwrap(getSystemId("LogoffSystem"));
+    hookSystemIds[3] = ResourceId.unwrap(getSystemId("MineSystem"));
 
     ExperienceMetadata.set(
       ExperienceMetadataData({
         contractAddress: worldSystemAddress,
         shouldDelegate: false,
         hookSystemIds: hookSystemIds,
-        joinFee: 0,
-        name: "Test Experience",
-        description: "Test Experience Description"
+        joinFee: 1400000000000000,
+        name: "Deathmatch",
+        description: "Stay inside the match area and kill as many players as you can! Most kills after 30 minutes gets reward pool."
       })
     );
+  }
+
+  function claimRewardPool() public {
+    require(GameMetadata.getIsGameStarted(), "Game has not started yet.");
+    require(block.number > Countdown.getCountdownEndBlock(), "Game has not ended yet.");
+    address[] memory registeredPlayers = GameMetadata.getPlayers();
+    if (registeredPlayers.length == 0) {
+      resetGame(registeredPlayers);
+      return;
+    }
+
+    uint256 maxKills = 0;
+    for (uint i = 0; i < registeredPlayers.length; i++) {
+      if (PlayerMetadata.getIsDisqualified(registeredPlayers[i])) {
+        continue;
+      }
+      uint256 playerKills = PlayerMetadata.getNumKills(registeredPlayers[i]);
+      if (playerKills > maxKills) {
+        maxKills = playerKills;
+      }
+    }
+
+    address[] memory playersWithMostKills = new address[](registeredPlayers.length);
+    uint256 numPlayersWithMostKills = 0;
+    for (uint i = 0; i < registeredPlayers.length; i++) {
+      if (PlayerMetadata.getIsDisqualified(registeredPlayers[i])) {
+        continue;
+      }
+      if (PlayerMetadata.getNumKills(registeredPlayers[i]) == maxKills) {
+        playersWithMostKills[numPlayersWithMostKills] = registeredPlayers[i];
+        numPlayersWithMostKills++;
+      }
+    }
+
+    ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(Utils.systemNamespace());
+    uint256 rewardPool = Balances.get(namespaceId);
+    if (numPlayersWithMostKills == 0 || rewardPool == 0) {
+      resetGame(registeredPlayers);
+      return;
+    }
+
+    // reset the game state
+    resetGame(registeredPlayers);
+
+    // Divide the reward pool among the players with the most kills
+    uint256 rewardPerPlayer = rewardPool / numPlayersWithMostKills;
+    for (uint i = 0; i < playersWithMostKills.length; i++) {
+      if (playersWithMostKills[i] == address(0)) {
+        continue;
+      }
+      IWorld(_world()).transferBalanceToAddress(namespaceId, playersWithMostKills[i], rewardPerPlayer);
+    }
+  }
+
+  function resetGame(address[] memory registeredPlayers) internal {
+    Notifications.set(address(0), "Game has ended. Reward pool has been distributed.");
+
+    GameMetadata.setIsGameStarted(false);
+    Countdown.setCountdownEndBlock(0);
+    for (uint i = 0; i < registeredPlayers.length; i++) {
+      PlayerMetadata.deleteRecord(registeredPlayers[i]);
+    }
+    GameMetadata.setPlayers(new address[](0));
+    updatePlayersToDisplay();
+
+    DisplayStatus.set("Waiting for the game to start");
+  }
+
+  function getKillsLeaderboard() public view returns (LeaderboardEntry[] memory) {
+    address[] memory registeredPlayers = GameMetadata.getPlayers();
+    LeaderboardEntry[] memory leaderboard = new LeaderboardEntry[](registeredPlayers.length);
+    for (uint i = 0; i < registeredPlayers.length; i++) {
+      if (PlayerMetadata.getIsDisqualified(registeredPlayers[i])) {
+        continue;
+      }
+      leaderboard[i] = LeaderboardEntry({
+        player: registeredPlayers[i],
+        kills: PlayerMetadata.getNumKills(registeredPlayers[i]),
+        isAlive: PlayerMetadata.getIsAlive(registeredPlayers[i])
+      });
+    }
+    return leaderboard;
   }
 }
