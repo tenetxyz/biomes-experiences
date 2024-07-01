@@ -40,6 +40,9 @@ import { Area, insideArea, insideAreaIgnoreY, getEntitiesInArea, getArea, setAre
 import { Build, BuildWithPos, buildExistsInWorld, buildWithPosExistsInWorld, getBuild, setBuild, getBuildWithPos, setBuildWithPos } from "../utils/BuildUtils.sol";
 import { NamedArea, NamedBuild, NamedBuildWithPos, weiToString, getEmptyBlockOnGround } from "../utils/GameUtils.sol";
 
+import { PlayerMetadata, PlayerMetadataData } from "../codegen/tables/PlayerMetadata.sol";
+import { removePlayer } from "../Utils.sol";
+
 // Functions that are called by the Biomes World contract
 contract WorldSystem is System, ICustomUnregisterDelegation, IOptionalSystemHook {
   function supportsInterface(bytes4 interfaceId) public pure override(IERC165, WorldContextConsumer) returns (bool) {
@@ -60,14 +63,83 @@ contract WorldSystem is System, ICustomUnregisterDelegation, IOptionalSystemHook
     bytes32 callDataHash
   ) public override {}
 
+  function transferRemainingBalance(address player, uint256 balance, address recipient) internal {
+    ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(Utils.systemNamespace());
+    if (balance > 0) {
+      if (recipient == address(0) || !PlayerMetadata.getIsRegistered(recipient)) {
+        IWorld(_world()).transferBalanceToAddress(namespaceId, player, balance);
+      } else {
+        PlayerMetadata.setBalance(recipient, PlayerMetadata.getBalance(recipient) + balance);
+      }
+    }
+  }
+
   function onUnregisterHook(
     address msgSender,
     ResourceId systemId,
     uint8 enabledHooksBitmap,
     bytes32 callDataHash
-  ) public override {}
+  ) public override {
+    if (!PlayerMetadata.getIsRegistered(msgSender)) {
+      return;
+    }
+
+    uint256 balance = PlayerMetadata.getBalance(msgSender);
+    address recipient = PlayerMetadata.getLastHitter(msgSender);
+    uint256 lastWithdrawalTime = PlayerMetadata.getLastWithdrawalTime(msgSender);
+    removePlayer(msgSender);
+
+    if (lastWithdrawalTime + 2 hours < block.timestamp) {
+      ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(Utils.systemNamespace());
+      IWorld(_world()).transferBalanceToAddress(namespaceId, msgSender, balance);
+    } else {
+      transferRemainingBalance(msgSender, balance, recipient);
+    }
+  }
 
   function onBeforeCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {}
 
-  function onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {}
+  function onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {
+    if (!PlayerMetadata.getIsRegistered(msgSender)) {
+      return;
+    }
+
+    if (isSystemId(systemId, "LogoffSystem")) {
+      require(false, "Cannot logoff when registered.");
+      return;
+    } else if (isSystemId(systemId, "SpawnSystem")) {
+      uint256 playerBalance = PlayerMetadata.getBalance(msgSender);
+      if (playerBalance == 0) {
+        return;
+      }
+      address recipient = PlayerMetadata.getLastHitter(msgSender);
+
+      removePlayer(msgSender);
+      transferRemainingBalance(msgSender, playerBalance, recipient);
+    } else if (isSystemId(systemId, "HitSystem")) {
+      address hitPlayer = getHitArgs(callData);
+
+      if (PlayerMetadata.getIsRegistered(hitPlayer)) {
+        PlayerMetadata.setLastHitter(hitPlayer, msgSender);
+
+        if (getEntityFromPlayer(hitPlayer) == bytes32(0)) {
+          PlayerMetadata.setBalance(
+            msgSender,
+            PlayerMetadata.getBalance(msgSender) + PlayerMetadata.getBalance(hitPlayer)
+          );
+          removePlayer(hitPlayer);
+
+          Notifications.set(
+            address(0),
+            string.concat(
+              "Player ",
+              Strings.toHexString(hitPlayer),
+              " has been killed by ",
+              Strings.toHexString(msgSender)
+            )
+          );
+        }
+      }
+    }
+  }
 }

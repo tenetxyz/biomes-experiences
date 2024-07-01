@@ -25,8 +25,8 @@ struct BuildsData {
 }
 
 library Builds {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "experience", name: "Builds", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657870657269656e6365000000004275696c647300000000000000000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "bountyhunter", name: "Builds", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x7462626f756e747968756e74657200004275696c647300000000000000000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0000000500000000000000000000000000000000000000000000000000000000);

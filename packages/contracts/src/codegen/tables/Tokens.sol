@@ -17,8 +17,8 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 library Tokens {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "experience", name: "Tokens", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657870657269656e636500000000546f6b656e7300000000000000000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "bountyhunter", name: "Tokens", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x7462626f756e747968756e7465720000546f6b656e7300000000000000000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0000000100000000000000000000000000000000000000000000000000000000);

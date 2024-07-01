@@ -22,8 +22,8 @@ struct CountdownData {
 }
 
 library Countdown {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "experience", name: "Countdown", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657870657269656e636500000000436f756e74646f776e00000000000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "bountyhunter", name: "Countdown", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x7462626f756e747968756e7465720000436f756e74646f776e00000000000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0040020020200000000000000000000000000000000000000000000000000000);

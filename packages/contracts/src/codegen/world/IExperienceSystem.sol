@@ -9,7 +9,9 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IExperienceSystem {
-  function experience__joinExperience() external payable;
+  function bountyhunter__joinExperience() external payable;
 
-  function experience__initExperience() external;
+  function bountyhunter__initExperience() external;
+
+  function bountyhunter__withdraw() external;
 }
