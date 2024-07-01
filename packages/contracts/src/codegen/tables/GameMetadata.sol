@@ -16,22 +16,22 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-struct CountdownData {
-  uint256 countdownEndTimestamp;
-  uint256 countdownEndBlock;
+struct GameMetadataData {
+  bool gameOver;
+  address winner;
 }
 
-library Countdown {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "racetothesky", name: "Countdown", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x746272616365746f746865736b790000436f756e74646f776e00000000000000);
+library GameMetadata {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "racetothesky", name: "GameMetadata", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746272616365746f746865736b79000047616d654d6574616461746100000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0040020020200000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0015020001140000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of ()
   Schema constant _keySchema = Schema.wrap(0x0000000000000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x004002001f1f0000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (bool, address)
+  Schema constant _valueSchema = Schema.wrap(0x0015020060610000000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -47,8 +47,8 @@ library Countdown {
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](2);
-    fieldNames[0] = "countdownEndTimestamp";
-    fieldNames[1] = "countdownEndBlock";
+    fieldNames[0] = "gameOver";
+    fieldNames[1] = "winner";
   }
 
   /**
@@ -66,85 +66,85 @@ library Countdown {
   }
 
   /**
-   * @notice Get countdownEndTimestamp.
+   * @notice Get gameOver.
    */
-  function getCountdownEndTimestamp() internal view returns (uint256 countdownEndTimestamp) {
+  function getGameOver() internal view returns (bool gameOver) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
+    return (_toBool(uint8(bytes1(_blob))));
   }
 
   /**
-   * @notice Get countdownEndTimestamp.
+   * @notice Get gameOver.
    */
-  function _getCountdownEndTimestamp() internal view returns (uint256 countdownEndTimestamp) {
+  function _getGameOver() internal view returns (bool gameOver) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
+    return (_toBool(uint8(bytes1(_blob))));
   }
 
   /**
-   * @notice Set countdownEndTimestamp.
+   * @notice Set gameOver.
    */
-  function setCountdownEndTimestamp(uint256 countdownEndTimestamp) internal {
+  function setGameOver(bool gameOver) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((countdownEndTimestamp)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((gameOver)), _fieldLayout);
   }
 
   /**
-   * @notice Set countdownEndTimestamp.
+   * @notice Set gameOver.
    */
-  function _setCountdownEndTimestamp(uint256 countdownEndTimestamp) internal {
+  function _setGameOver(bool gameOver) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((countdownEndTimestamp)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((gameOver)), _fieldLayout);
   }
 
   /**
-   * @notice Get countdownEndBlock.
+   * @notice Get winner.
    */
-  function getCountdownEndBlock() internal view returns (uint256 countdownEndBlock) {
+  function getWinner() internal view returns (address winner) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
-    return (uint256(bytes32(_blob)));
+    return (address(bytes20(_blob)));
   }
 
   /**
-   * @notice Get countdownEndBlock.
+   * @notice Get winner.
    */
-  function _getCountdownEndBlock() internal view returns (uint256 countdownEndBlock) {
+  function _getWinner() internal view returns (address winner) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
-    return (uint256(bytes32(_blob)));
+    return (address(bytes20(_blob)));
   }
 
   /**
-   * @notice Set countdownEndBlock.
+   * @notice Set winner.
    */
-  function setCountdownEndBlock(uint256 countdownEndBlock) internal {
+  function setWinner(address winner) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((countdownEndBlock)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((winner)), _fieldLayout);
   }
 
   /**
-   * @notice Set countdownEndBlock.
+   * @notice Set winner.
    */
-  function _setCountdownEndBlock(uint256 countdownEndBlock) internal {
+  function _setWinner(address winner) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((countdownEndBlock)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((winner)), _fieldLayout);
   }
 
   /**
    * @notice Get the full data.
    */
-  function get() internal view returns (CountdownData memory _table) {
+  function get() internal view returns (GameMetadataData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
@@ -158,7 +158,7 @@ library Countdown {
   /**
    * @notice Get the full data.
    */
-  function _get() internal view returns (CountdownData memory _table) {
+  function _get() internal view returns (GameMetadataData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
@@ -172,8 +172,8 @@ library Countdown {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 countdownEndTimestamp, uint256 countdownEndBlock) internal {
-    bytes memory _staticData = encodeStatic(countdownEndTimestamp, countdownEndBlock);
+  function set(bool gameOver, address winner) internal {
+    bytes memory _staticData = encodeStatic(gameOver, winner);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -186,8 +186,8 @@ library Countdown {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 countdownEndTimestamp, uint256 countdownEndBlock) internal {
-    bytes memory _staticData = encodeStatic(countdownEndTimestamp, countdownEndBlock);
+  function _set(bool gameOver, address winner) internal {
+    bytes memory _staticData = encodeStatic(gameOver, winner);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -200,8 +200,8 @@ library Countdown {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(CountdownData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.countdownEndTimestamp, _table.countdownEndBlock);
+  function set(GameMetadataData memory _table) internal {
+    bytes memory _staticData = encodeStatic(_table.gameOver, _table.winner);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -214,8 +214,8 @@ library Countdown {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(CountdownData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.countdownEndTimestamp, _table.countdownEndBlock);
+  function _set(GameMetadataData memory _table) internal {
+    bytes memory _staticData = encodeStatic(_table.gameOver, _table.winner);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -228,12 +228,10 @@ library Countdown {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(
-    bytes memory _blob
-  ) internal pure returns (uint256 countdownEndTimestamp, uint256 countdownEndBlock) {
-    countdownEndTimestamp = (uint256(Bytes.getBytes32(_blob, 0)));
+  function decodeStatic(bytes memory _blob) internal pure returns (bool gameOver, address winner) {
+    gameOver = (_toBool(uint8(Bytes.getBytes1(_blob, 0))));
 
-    countdownEndBlock = (uint256(Bytes.getBytes32(_blob, 32)));
+    winner = (address(Bytes.getBytes20(_blob, 1)));
   }
 
   /**
@@ -246,8 +244,8 @@ library Countdown {
     bytes memory _staticData,
     EncodedLengths,
     bytes memory
-  ) internal pure returns (CountdownData memory _table) {
-    (_table.countdownEndTimestamp, _table.countdownEndBlock) = decodeStatic(_staticData);
+  ) internal pure returns (GameMetadataData memory _table) {
+    (_table.gameOver, _table.winner) = decodeStatic(_staticData);
   }
 
   /**
@@ -272,8 +270,8 @@ library Countdown {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint256 countdownEndTimestamp, uint256 countdownEndBlock) internal pure returns (bytes memory) {
-    return abi.encodePacked(countdownEndTimestamp, countdownEndBlock);
+  function encodeStatic(bool gameOver, address winner) internal pure returns (bytes memory) {
+    return abi.encodePacked(gameOver, winner);
   }
 
   /**
@@ -282,11 +280,8 @@ library Countdown {
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
-  function encode(
-    uint256 countdownEndTimestamp,
-    uint256 countdownEndBlock
-  ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(countdownEndTimestamp, countdownEndBlock);
+  function encode(bool gameOver, address winner) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
+    bytes memory _staticData = encodeStatic(gameOver, winner);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -301,5 +296,17 @@ library Countdown {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
     return _keyTuple;
+  }
+}
+
+/**
+ * @notice Cast a value to a bool.
+ * @dev Boolean values are encoded as uint8 (1 = true, 0 = false), but Solidity doesn't allow casting between uint8 and bool.
+ * @param value The uint8 value to convert.
+ * @return result The boolean value.
+ */
+function _toBool(uint8 value) pure returns (bool result) {
+  assembly {
+    result := value
   }
 }
