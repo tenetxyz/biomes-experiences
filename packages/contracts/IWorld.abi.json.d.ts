@@ -68,6 +68,167 @@ declare const abi: [
   },
   {
     "type": "function",
+    "name": "bountyhunter__canUnregister",
+    "inputs": [
+      {
+        "name": "delegator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "bountyhunter__initExperience",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "bountyhunter__joinExperience",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "bountyhunter__onAfterCallSystem",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "callData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "bountyhunter__onBeforeCallSystem",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "callData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "bountyhunter__onRegisterHook",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "enabledHooksBitmap",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "callDataHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "bountyhunter__onUnregisterHook",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "enabledHooksBitmap",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "callDataHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "bountyhunter__supportsInterface",
+    "inputs": [
+      {
+        "name": "interfaceId",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "bountyhunter__withdraw",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "call",
     "inputs": [
       {
@@ -149,160 +310,6 @@ declare const abi: [
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__canUnregister",
-    "inputs": [
-      {
-        "name": "delegator",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__initExperience",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__joinExperience",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "payable"
-  },
-  {
-    "type": "function",
-    "name": "experience__onAfterCallSystem",
-    "inputs": [
-      {
-        "name": "msgSender",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "systemId",
-        "type": "bytes32",
-        "internalType": "ResourceId"
-      },
-      {
-        "name": "callData",
-        "type": "bytes",
-        "internalType": "bytes"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__onBeforeCallSystem",
-    "inputs": [
-      {
-        "name": "msgSender",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "systemId",
-        "type": "bytes32",
-        "internalType": "ResourceId"
-      },
-      {
-        "name": "callData",
-        "type": "bytes",
-        "internalType": "bytes"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__onRegisterHook",
-    "inputs": [
-      {
-        "name": "msgSender",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "systemId",
-        "type": "bytes32",
-        "internalType": "ResourceId"
-      },
-      {
-        "name": "enabledHooksBitmap",
-        "type": "uint8",
-        "internalType": "uint8"
-      },
-      {
-        "name": "callDataHash",
-        "type": "bytes32",
-        "internalType": "bytes32"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__onUnregisterHook",
-    "inputs": [
-      {
-        "name": "msgSender",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "systemId",
-        "type": "bytes32",
-        "internalType": "ResourceId"
-      },
-      {
-        "name": "enabledHooksBitmap",
-        "type": "uint8",
-        "internalType": "uint8"
-      },
-      {
-        "name": "callDataHash",
-        "type": "bytes32",
-        "internalType": "bytes32"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "experience__supportsInterface",
-    "inputs": [
-      {
-        "name": "interfaceId",
-        "type": "bytes4",
-        "internalType": "bytes4"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "pure"
   },
   {
     "type": "function",

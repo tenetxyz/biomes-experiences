@@ -33,7 +33,7 @@ contract PostDeploy is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    IWorld(worldAddress).experience__initExperience();
+    IWorld(worldAddress).bountyhunter__initExperience();
 
     vm.stopBroadcast();
   }

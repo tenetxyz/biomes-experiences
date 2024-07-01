@@ -28,8 +28,8 @@ struct BuildsWithPosData {
 }
 
 library BuildsWithPos {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "experience", name: "BuildsWithPos", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657870657269656e6365000000004275696c647357697468506f73000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "bountyhunter", name: "BuildsWithPos", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x7462626f756e747968756e74657200004275696c647357697468506f73000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0006030502020200000000000000000000000000000000000000000000000000);

@@ -11,25 +11,25 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IWorldSystem {
-  function experience__supportsInterface(bytes4 interfaceId) external pure returns (bool);
+  function bountyhunter__supportsInterface(bytes4 interfaceId) external pure returns (bool);
 
-  function experience__canUnregister(address delegator) external returns (bool);
+  function bountyhunter__canUnregister(address delegator) external returns (bool);
 
-  function experience__onRegisterHook(
+  function bountyhunter__onRegisterHook(
     address msgSender,
     ResourceId systemId,
     uint8 enabledHooksBitmap,
     bytes32 callDataHash
   ) external;
 
-  function experience__onUnregisterHook(
+  function bountyhunter__onUnregisterHook(
     address msgSender,
     ResourceId systemId,
     uint8 enabledHooksBitmap,
     bytes32 callDataHash
   ) external;
 
-  function experience__onBeforeCallSystem(address msgSender, ResourceId systemId, bytes memory callData) external;
+  function bountyhunter__onBeforeCallSystem(address msgSender, ResourceId systemId, bytes memory callData) external;
 
-  function experience__onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) external;
+  function bountyhunter__onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) external;
 }

@@ -21,6 +21,8 @@ import { Tokens } from "../src/codegen/tables/Tokens.sol";
 
 import { VoxelCoord } from "@biomesaw/utils/src/Types.sol";
 
+import { PlayerMetadata, PlayerMetadataData } from "../src/codegen/tables/PlayerMetadata.sol";
+
 contract TestScript is Script {
   function run(address worldAddress) external {
     // Specify a store so that you can use tables directly in PostDeploy
@@ -32,7 +34,15 @@ contract TestScript is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    Notifications.set(address(0), "Test Notification");
+    // IWorld(worldAddress).bountyhunter__withdraw();
+
+    address[] memory players = Players.get();
+    for (uint i = 0; i < players.length; i++) {
+      console.log("Player");
+      console.logAddress(players[i]);
+      console.logUint(PlayerMetadata.getBalance(players[i]));
+      console.logAddress(PlayerMetadata.getLastHitter(players[i]));
+    }
 
     vm.stopBroadcast();
   }

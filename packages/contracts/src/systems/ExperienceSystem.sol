@@ -44,34 +44,78 @@ import { NamedArea, NamedBuild, NamedBuildWithPos, weiToString, getEmptyBlockOnG
 import { IExperienceSystem } from "../prototypes/IExperienceSystem.sol";
 import { EXPERIENCE_NAMESPACE } from "../Constants.sol";
 
+import { PlayerMetadata, PlayerMetadataData } from "../codegen/tables/PlayerMetadata.sol";
+import { removePlayer } from "../Utils.sol";
+
 // Functions that are called by EOAs
 contract ExperienceSystem is IExperienceSystem {
   function joinExperience() public payable override {
     super.joinExperience();
+
+    address player = _msgSender();
+
+    require(getEntityFromPlayer(player) != bytes32(0), "You Must First Spawn An Avatar In Biome-1 To Play The Game.");
+    require(!PlayerMetadata.getIsRegistered(player), "Player is already registered");
+    Players.pushPlayers(player);
+    PlayerMetadata.set(
+      player,
+      PlayerMetadataData({
+        balance: _msgValue(),
+        lastWithdrawalTime: block.timestamp,
+        lastHitter: address(0),
+        isRegistered: true
+      })
+    );
+
+    Notifications.set(address(0), string.concat("Player ", Strings.toHexString(player), " has joined the game"));
   }
 
   function initExperience() public {
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
 
-    DisplayStatus.set("Test Experience Status");
-    DisplayRegisterMsg.set("Test Experience Register Message");
-    DisplayUnregisterMsg.set("Test Experience Unregister Message");
+    DisplayStatus.set(
+      "If anyone kills your player, they will get this eth. If you kill other players, you will get their eth."
+    );
+    DisplayRegisterMsg.set(
+      "You can't logoff until you withdraw your ether or die. Whenever you hit another player, check if they died in order to earn their ether."
+    );
+    DisplayUnregisterMsg.set(
+      "You will be unregistered and any remaining balance will be sent to you/your last hitter."
+    );
 
     address worldSystemAddress = Systems.getSystem(getNamespaceSystemId(EXPERIENCE_NAMESPACE, "WorldSystem"));
     require(worldSystemAddress != address(0), "WorldSystem not found");
 
-    bytes32[] memory hookSystemIds = new bytes32[](1);
-    hookSystemIds[0] = ResourceId.unwrap(getSystemId("MoveSystem"));
+    bytes32[] memory hookSystemIds = new bytes32[](3);
+    hookSystemIds[0] = ResourceId.unwrap(getSystemId("LogoffSystem"));
+    hookSystemIds[1] = ResourceId.unwrap(getSystemId("SpawnSystem"));
+    hookSystemIds[2] = ResourceId.unwrap(getSystemId("HitSystem"));
 
     ExperienceMetadata.set(
       ExperienceMetadataData({
         contractAddress: worldSystemAddress,
         shouldDelegate: false,
         hookSystemIds: hookSystemIds,
-        joinFee: 0,
-        name: "Test Experience",
-        description: "Test Experience Description"
+        joinFee: 350000000000000,
+        name: "Bounty Hunter",
+        description: "Kill players to get their ether. Stay alive to keep it."
       })
     );
+  }
+
+  function withdraw() public {
+    address player = _msgSender();
+    require(PlayerMetadata.getIsRegistered(player), "You are not a registered player.");
+    require(PlayerMetadata.getLastWithdrawalTime(player) + 2 hours < block.timestamp, "Can't withdraw yet.");
+
+    uint256 amount = PlayerMetadata.getBalance(player);
+    require(amount > 0, "Your balance is zero.");
+
+    PlayerMetadata.setLastWithdrawalTime(player, block.timestamp);
+    PlayerMetadata.setBalance(player, 0);
+    PlayerMetadata.setLastHitter(player, address(0));
+
+    ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(Utils.systemNamespace());
+    IWorld(_world()).transferBalanceToAddress(namespaceId, player, amount);
   }
 }
