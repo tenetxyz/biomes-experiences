@@ -40,17 +40,12 @@ import { Area, insideArea, insideAreaIgnoreY, getEntitiesInArea, getArea, setAre
 import { Build, BuildWithPos, buildExistsInWorld, buildWithPosExistsInWorld, getBuild, setBuild, getBuildWithPos, setBuildWithPos } from "../utils/BuildUtils.sol";
 import { NamedArea, NamedBuild, NamedBuildWithPos, weiToString, getEmptyBlockOnGround } from "../utils/GameUtils.sol";
 
-// Functions that are called by the Biomes World contract
-contract WorldSystem is System, ICustomUnregisterDelegation, IOptionalSystemHook {
-  function supportsInterface(bytes4 interfaceId) public pure override(IERC165, WorldContextConsumer) returns (bool) {
-    return
-      interfaceId == type(ICustomUnregisterDelegation).interfaceId ||
-      interfaceId == type(IOptionalSystemHook).interfaceId ||
-      super.supportsInterface(interfaceId);
-  }
+import { Builder } from "../codegen/tables/Builder.sol";
 
-  function canUnregister(address delegator) public override returns (bool) {
-    return true;
+// Functions that are called by the Biomes World contract
+contract WorldSystem is System, IOptionalSystemHook {
+  function supportsInterface(bytes4 interfaceId) public pure override(IERC165, WorldContextConsumer) returns (bool) {
+    return interfaceId == type(IOptionalSystemHook).interfaceId || super.supportsInterface(interfaceId);
   }
 
   function onRegisterHook(
@@ -69,5 +64,10 @@ contract WorldSystem is System, ICustomUnregisterDelegation, IOptionalSystemHook
 
   function onBeforeCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {}
 
-  function onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {}
+  function onAfterCallSystem(address msgSender, ResourceId systemId, bytes memory callData) public override {
+    if (isSystemId(systemId, "BuildSystem")) {
+      (, VoxelCoord memory coord) = getBuildArgs(callData);
+      Builder.set(coord.x, coord.y, coord.z, msgSender);
+    }
+  }
 }

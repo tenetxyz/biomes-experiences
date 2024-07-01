@@ -27,8 +27,8 @@ struct AreasData {
 }
 
 library Areas {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "experience", name: "Areas", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657870657269656e63650000000041726561730000000000000000000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "buildanomics", name: "Areas", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x74626275696c64616e6f6d696373000041726561730000000000000000000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x000c060102020202020200000000000000000000000000000000000000000000);

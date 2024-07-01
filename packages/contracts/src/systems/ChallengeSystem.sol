@@ -52,92 +52,23 @@ import { PlayerMetadata } from "../codegen/tables/PlayerMetadata.sol";
 import { BuildIds } from "../codegen/tables/BuildIds.sol";
 
 // Functions that are called by EOAs
-contract ExperienceSystem is IExperienceSystem {
-  function joinExperience() public payable override {
-    super.joinExperience();
-  }
-
-  function initExperience() public {
-    AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
-
-    DisplayStatus.set(
-      "Join Monument Chains: Build One Yourself, Reward existing builders, and earn from future builders."
-    );
-
-    address worldSystemAddress = Systems.getSystem(getNamespaceSystemId(EXPERIENCE_NAMESPACE, "WorldSystem"));
-    require(worldSystemAddress != address(0), "WorldSystem not found");
-
-    bytes32[] memory hookSystemIds = new bytes32[](1);
-    hookSystemIds[0] = ResourceId.unwrap(getSystemId("BuildSystem"));
-
-    ExperienceMetadata.set(
-      ExperienceMetadataData({
-        contractAddress: worldSystemAddress,
-        shouldDelegate: false,
-        hookSystemIds: hookSystemIds,
-        joinFee: 0,
-        name: "Build A Nomics",
-        description: "Join Monument Chains: Build One Yourself, Reward existing builders, and earn from future builders."
-      })
-    );
-  }
-
-  function create(Build memory blueprint, uint256 submissionPrice, string memory name) public {
-    require(blueprint.objectTypeIds.length > 0, "Must specify at least one object type ID.");
-    require(
-      blueprint.objectTypeIds.length == blueprint.relativePositions.length,
-      "Number of object type IDs must match number of relative position."
-    );
-    require(
-      voxelCoordsAreEqual(blueprint.relativePositions[0], VoxelCoord({ x: 0, y: 0, z: 0 })),
-      "First relative position must be (0, 0, 0)."
-    );
-    require(bytes(name).length > 0, "Must specify a name.");
-    require(submissionPrice > 0, "Must specify a submission price.");
-
-    uint256 newBuildId = BuildIds.get() + 1;
-    BuildIds.set(newBuildId);
-
-    BuildMetadata.set(
-      bytes32(newBuildId),
-      BuildMetadataData({
-        submissionPrice: submissionPrice,
-        builders: new address[](0),
-        locationsX: new int16[](0),
-        locationsY: new int16[](0),
-        locationsZ: new int16[](0)
-      })
-    );
-
-    setBuild(bytes32(newBuildId), name, blueprint);
-
-    Notifications.set(address(0), "A new build has been added to the game.");
-  }
-
-  function submitBuilding(uint256 buildingId, VoxelCoord memory baseWorldCoord) public payable {
+contract ChallengeSystem is System {
+  function challengeBuilding(uint256 buildingId, uint256 n) public {
     require(buildingId <= BuildIds.get(), "Invalid building ID");
     require(bytes(Builds.getName(bytes32(buildingId))).length > 0, "Invalid building ID");
 
     Build memory blueprint = getBuild(bytes32(buildingId));
     BuildMetadataData memory buildMetadata = BuildMetadata.get(bytes32(buildingId));
     require(buildMetadata.submissionPrice > 0, "Build Metadata not found");
-    VoxelCoord[] memory existingBuildLocations = new VoxelCoord[](buildMetadata.locationsX.length);
-    for (uint i = 0; i < buildMetadata.locationsX.length; i++) {
-      existingBuildLocations[i] = VoxelCoord({
-        x: buildMetadata.locationsX[i],
-        y: buildMetadata.locationsY[i],
-        z: buildMetadata.locationsZ[i]
-      });
-    }
+    require(n < buildMetadata.locationsX.length, "Invalid index");
 
-    address msgSender = _msgSender();
-    require(_msgValue() == buildMetadata.submissionPrice, "Incorrect submission price.");
+    VoxelCoord memory baseWorldCoord = VoxelCoord({
+      x: buildMetadata.locationsX[n],
+      y: buildMetadata.locationsY[n],
+      z: buildMetadata.locationsZ[n]
+    });
 
-    for (uint i = 0; i < existingBuildLocations.length; ++i) {
-      if (voxelCoordsAreEqual(existingBuildLocations[i], baseWorldCoord)) {
-        revert("Location already exists");
-      }
-    }
+    bool doesMatch = true;
 
     // Go through each relative position, apply it to the base world coord, and check if the object type id matches
     for (uint256 i = 0; i < blueprint.objectTypeIds.length; i++) {
@@ -154,65 +85,37 @@ contract ExperienceSystem is IExperienceSystem {
         objectTypeId = IProcGenSystem(_world()).getTerrainBlock(absolutePosition);
       } else {
         objectTypeId = getObjectType(entityId);
-
-        address builder = Builder.get(absolutePosition.x, absolutePosition.y, absolutePosition.z);
-        require(builder == msgSender, "Builder does not match");
       }
       if (objectTypeId != blueprint.objectTypeIds[i]) {
-        revert("Build does not match.");
+        doesMatch = false;
+        break;
       }
     }
 
-    uint256 numBuilders = buildMetadata.builders.length;
-    {
-      address[] memory newBuilders = new address[](buildMetadata.builders.length + 1);
-      for (uint i = 0; i < buildMetadata.builders.length; i++) {
-        newBuilders[i] = buildMetadata.builders[i];
-      }
-      newBuilders[buildMetadata.builders.length] = msgSender;
+    if (!doesMatch) {
+      address[] memory newBuilders = new address[](buildMetadata.builders.length - 1);
+      int16[] memory newLocationsX = new int16[](buildMetadata.locationsX.length - 1);
+      int16[] memory newLocationsY = new int16[](buildMetadata.locationsY.length - 1);
+      int16[] memory newLocationsZ = new int16[](buildMetadata.locationsZ.length - 1);
 
-      int16[] memory newLocationsX = new int16[](buildMetadata.locationsX.length + 1);
-      int16[] memory newLocationsY = new int16[](buildMetadata.locationsY.length + 1);
-      int16[] memory newLocationsZ = new int16[](buildMetadata.locationsZ.length + 1);
-      for (uint i = 0; i < buildMetadata.locationsX.length; i++) {
-        newLocationsX[i] = buildMetadata.locationsX[i];
-        newLocationsY[i] = buildMetadata.locationsY[i];
-        newLocationsZ[i] = buildMetadata.locationsZ[i];
+      for (uint i = 0; i < buildMetadata.builders.length; i++) {
+        if (i < n) {
+          newBuilders[i] = buildMetadata.builders[i];
+          newLocationsX[i] = buildMetadata.locationsX[i];
+          newLocationsY[i] = buildMetadata.locationsY[i];
+          newLocationsZ[i] = buildMetadata.locationsZ[i];
+        } else if (i > n) {
+          newBuilders[i - 1] = buildMetadata.builders[i];
+          newLocationsX[i - 1] = buildMetadata.locationsX[i];
+          newLocationsY[i - 1] = buildMetadata.locationsY[i];
+          newLocationsZ[i - 1] = buildMetadata.locationsZ[i];
+        }
       }
-      newLocationsX[buildMetadata.locationsX.length] = baseWorldCoord.x;
-      newLocationsY[buildMetadata.locationsY.length] = baseWorldCoord.y;
-      newLocationsZ[buildMetadata.locationsZ.length] = baseWorldCoord.z;
 
       BuildMetadata.setBuilders(bytes32(buildingId), newBuilders);
       BuildMetadata.setLocationsX(bytes32(buildingId), newLocationsX);
       BuildMetadata.setLocationsY(bytes32(buildingId), newLocationsY);
       BuildMetadata.setLocationsZ(bytes32(buildingId), newLocationsZ);
-    }
-
-    ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(Utils.systemNamespace());
-    if (numBuilders > 0) {
-      uint256 splitAmount = _msgValue() / numBuilders;
-      uint256 totalDistributed = splitAmount * numBuilders;
-      uint256 remainder = _msgValue() - totalDistributed;
-
-      for (uint256 i = 0; i < numBuilders; i++) {
-        PlayerMetadata.setEarned(
-          buildMetadata.builders[i],
-          PlayerMetadata.getEarned(buildMetadata.builders[i]) + splitAmount
-        );
-
-        Notifications.set(buildMetadata.builders[i], "You've earned some ether for your contribution to a build.");
-
-        IWorld(_world()).transferBalanceToAddress(namespaceId, buildMetadata.builders[i], splitAmount);
-      }
-
-      if (remainder > 0) {
-        IWorld(_world()).transferBalanceToAddress(namespaceId, msgSender, remainder);
-      }
-    } else {
-      PlayerMetadata.setEarned(msgSender, PlayerMetadata.getEarned(msgSender) + _msgValue());
-
-      IWorld(_world()).transferBalanceToAddress(namespaceId, msgSender, _msgValue());
     }
   }
 }

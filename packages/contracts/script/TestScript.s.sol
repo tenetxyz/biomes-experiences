@@ -21,6 +21,12 @@ import { Tokens } from "../src/codegen/tables/Tokens.sol";
 
 import { VoxelCoord } from "@biomesaw/utils/src/Types.sol";
 
+import { Builder } from "../src/codegen/tables/Builder.sol";
+import { BuildMetadata, BuildMetadataData } from "../src/codegen/tables/BuildMetadata.sol";
+import { PlayerMetadata } from "../src/codegen/tables/PlayerMetadata.sol";
+import { BuildIds } from "../src/codegen/tables/BuildIds.sol";
+import { Build } from "../src/utils/BuildUtils.sol";
+
 contract TestScript is Script {
   function run(address worldAddress) external {
     // Specify a store so that you can use tables directly in PostDeploy
@@ -32,7 +38,44 @@ contract TestScript is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    Notifications.set(address(0), "Test Notification");
+    uint8[] memory objectTypeIds = new uint8[](6);
+    objectTypeIds[0] = 42;
+    objectTypeIds[1] = 42;
+    objectTypeIds[2] = 42;
+    objectTypeIds[3] = 34;
+    objectTypeIds[4] = 42;
+    objectTypeIds[5] = 34;
+
+    VoxelCoord[] memory relativePositions = new VoxelCoord[](6);
+    relativePositions[0] = VoxelCoord(0, 0, 0);
+    relativePositions[1] = VoxelCoord(0, 0, 1);
+    relativePositions[2] = VoxelCoord(0, 0, 2);
+    relativePositions[3] = VoxelCoord(0, 1, 0);
+    relativePositions[4] = VoxelCoord(0, 1, 1);
+    relativePositions[5] = VoxelCoord(0, 1, 2);
+
+    uint256 submissionPrice = 10000000000000000;
+    // IWorld(worldAddress).buildanomics__create(
+    //   Build({ objectTypeIds: objectTypeIds, relativePositions: relativePositions }),
+    //   submissionPrice,
+    //   "Test Building"
+    // );
+
+    uint256 buildingId = 1;
+
+    // IWorld(worldAddress).buildanomics__submitBuilding{ value: submissionPrice }(buildingId, VoxelCoord(302, 13, -249));
+
+    IWorld(worldAddress).buildanomics__challengeBuilding(buildingId, 0);
+
+    BuildMetadataData memory buildMetadata = BuildMetadata.get(bytes32(buildingId));
+
+    console.log("Builds");
+    for (uint i = 0; i < buildMetadata.builders.length; i++) {
+      console.logAddress(buildMetadata.builders[i]);
+      console.logInt(buildMetadata.locationsX[i]);
+      console.logInt(buildMetadata.locationsY[i]);
+      console.logInt(buildMetadata.locationsZ[i]);
+    }
 
     vm.stopBroadcast();
   }
