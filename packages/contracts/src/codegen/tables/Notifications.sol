@@ -22,8 +22,8 @@ struct NotificationsData {
 }
 
 library Notifications {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "experience", name: "Notifications", typeId: RESOURCE_OFFCHAIN_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x6f74657870657269656e6365000000004e6f74696669636174696f6e73000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "buildanomics", name: "Notifications", typeId: RESOURCE_OFFCHAIN_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x6f746275696c64616e6f6d69637300004e6f74696669636174696f6e73000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0014010114000000000000000000000000000000000000000000000000000000);

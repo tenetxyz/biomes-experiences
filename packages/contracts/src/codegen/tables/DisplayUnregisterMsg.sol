@@ -17,8 +17,8 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 library DisplayUnregisterMsg {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "experience", name: "DisplayUnregiste", typeId: RESOURCE_OFFCHAIN_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x6f74657870657269656e636500000000446973706c6179556e72656769737465);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "buildanomics", name: "DisplayUnregiste", typeId: RESOURCE_OFFCHAIN_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x6f746275696c64616e6f6d6963730000446973706c6179556e72656769737465);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0000000100000000000000000000000000000000000000000000000000000000);
